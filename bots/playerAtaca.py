@@ -4,6 +4,7 @@ from calculadora.converterCalculadora import calcular_dmg_con_poke_env
 import asyncio
 
 class playerAtaca(Player):
+    
     async def choose_move(self, battle):
         try:
             print(" ")

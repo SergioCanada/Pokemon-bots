@@ -1,10 +1,9 @@
 import subprocess
 import time
 import psutil
-import socket
 import signal
 from poke_env.player import Player
-
+import asyncio
 
 class JugarLocal:
     def __init__(self, jugador1: Player, jugador2: Player):
@@ -24,19 +23,8 @@ class JugarLocal:
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 continue
 
-    def esperar_puerto(self, host, port, timeout=30):
-        start = time.time()
-        while time.time() - start < timeout:
-            try:
-                with socket.create_connection((host, port), timeout=1):
-                    return True
-            except (ConnectionRefusedError, OSError):
-                time.sleep(0.5)
-        return False
-
     def iniciar_showdown_server(self):
         self.liberar_puerto(8000)
-
         print("Iniciando servidor de Pokémon Showdown en local...")
         self.showdown_proc = subprocess.Popen(
             ["node", "pokemon-showdown", "start", "--no-security"],
@@ -46,81 +34,77 @@ class JugarLocal:
             stderr=subprocess.DEVNULL,
             shell=True
         )
-        print("Esperando que Showdown arranque...")
-        if self.esperar_puerto('127.0.0.1', 8000, timeout=60):
-            print("Servidor Showdown listo y puerto 8000 activo.")
-            time.sleep(3)
-        else:
-            raise RuntimeError("No se pudo conectar al puerto 8000 de Showdown")
+        time.sleep(10)  # Espera fija más larga para mayor fiabilidad
+        print("Servidor Showdown debería estar listo en http://localhost:8000")
 
     def iniciar_calculadora_server(self):
-        self.liberar_puerto(3000)
-
-        print("Iniciando servidor de la calculadora...")
-        self.calculadora_proc = subprocess.Popen(
-            ["node", "servidor.js"],
-            cwd="calculadora",
-            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            shell=True
-        )
-        print("Esperando que la calculadora arranque...")
-        if self.esperar_puerto('127.0.0.1', 3000, timeout=30):
-            print("Servidor de la calculadora listo y puerto 3000 activo.")
-            time.sleep(1)
+        if not self._esta_proceso_activo("servidor.js"):
+            print("Iniciando servidor de la calculadora en puerto 3000...")
+            self.calculadora_proc = subprocess.Popen(
+                ["node", "servidor.js"],
+                cwd="calculadora",
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                shell=True
+            )
+            time.sleep(2)
         else:
-            raise RuntimeError("No se pudo conectar al puerto 3000 de la calculadora")
+            print("Servidor de la calculadora ya está activo.")
+
+    def _esta_proceso_activo(self, nombre_script):
+        for proc in psutil.process_iter(attrs=["cmdline"]):
+            try:
+                cmdline = proc.info.get("cmdline")
+                if cmdline and any(nombre_script in str(arg) for arg in cmdline):
+                    return True
+            except (psutil.NoSuchProcess, psutil.AccessDenied, TypeError):
+                continue
+        return False
 
     def detener_procesos(self):
-        try:
-            if self.showdown_proc:
-                print("Deteniendo servidor de Pokémon Showdown...")
+        if self.showdown_proc:
+            print("Deteniendo servidor de Pokémon Showdown...")
+            try:
                 self.showdown_proc.send_signal(signal.CTRL_BREAK_EVENT)
-                try:
-                    self.showdown_proc.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    print("El proceso Showdown no respondió a la señal, matándolo forzadamente...")
-                    self.showdown_proc.kill()
-        except Exception as e:
-            print(f"[WARN] Error al detener Showdown: {e}")
-
-        try:
-            if self.calculadora_proc:
-                print("Deteniendo servidor de la calculadora...")
+                self.showdown_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                print("El proceso Showdown no respondió, matándolo...")
+                self.showdown_proc.kill()
+        if self.calculadora_proc:
+            print("Deteniendo servidor de la calculadora...")
+            try:
                 self.calculadora_proc.send_signal(signal.CTRL_BREAK_EVENT)
-                try:
-                    self.calculadora_proc.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    print("El proceso calculadora no respondió a la señal, matándolo forzadamente...")
-                    self.calculadora_proc.kill()
-        except Exception as e:
-            print(f"[WARN] Error al detener calculadora: {e}")
+                self.calculadora_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                print("La calculadora no respondió, matándola...")
+                self.calculadora_proc.kill()
 
     def print_local_showdown_link(self):
         url = "http://localhost:8000/"
-        texto = "Click aquí para abrir el servidor local de Showdown (http://localhost:8000)"
+        texto = "Click aquí para abrir el servidor local de Showdown"
         print(f"\033]8;;{url}\033\\{texto}\033]8;;\033\\")
-
+        
 
     async def jugar(self, num_batallas=5):
-        self.iniciar_showdown_server()
-        self.iniciar_calculadora_server()
-        self.print_local_showdown_link()
+        try:
+            self.iniciar_showdown_server()
+            self.iniciar_calculadora_server()
+            self.print_local_showdown_link()
 
-        print(f"Iniciando {num_batallas} batallas locales entre {self.jugador1.__class__.__name__} y {self.jugador2.__class__.__name__}...")
-        for i in range(num_batallas):
-            print(f"\nBatalla {i + 1}...")
-            await self.jugador1.battle_against(self.jugador2, n_battles=1)
+            print(f"Iniciando {num_batallas} batallas locales entre {self.jugador1.__class__.__name__} y {self.jugador2.__class__.__name__}...")
+            for i in range(num_batallas):
+                print(f"\nBatalla {i + 1}...")
+                await self.jugador1.battle_against(self.jugador2, n_battles=1)
 
-        victorias1 = self.jugador1.n_won_battles
-        victorias2 = self.jugador2.n_won_battles
-        empates = num_batallas - victorias1 - victorias2
+            victorias1 = self.jugador1.n_won_battles
+            victorias2 = self.jugador2.n_won_battles
+            empates = num_batallas - victorias1 - victorias2
 
-        print("\n--- RESUMEN DE BATALLAS ---")
-        print(f"{self.jugador1.__class__.__name__}: {victorias1} victoria(s)")
-        print(f"{self.jugador2.__class__.__name__}: {victorias2} victoria(s)")
-        print(f"Empates o sin decidir: {empates}")
-        print("----------------------------")
-
-
+            print("\n--- RESUMEN DE BATALLAS ---")
+            print(f"{self.jugador1.__class__.__name__}: {victorias1} victoria(s)")
+            print(f"{self.jugador2.__class__.__name__}: {victorias2} victoria(s)")
+            print(f"Empates o sin decidir: {empates}")
+            print("----------------------------")
+        finally:
+            await asyncio.sleep(1)
