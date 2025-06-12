@@ -13,7 +13,7 @@ Este proyecto permite simular batallas de Pokémon usando bots, tanto en modo lo
 1. Clonar el repositorio:
 
    ```bash
-   git clone https://github.com/tuusuario/pokemon-bots.git
+   git clone https://github.com/SergioCanada/Pokemon-bots.git
    cd pokemon-bots
 
 2. Entorno virtual (opcional)
