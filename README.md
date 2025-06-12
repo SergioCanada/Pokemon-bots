@@ -36,7 +36,7 @@ Ejecuta batallas entre bots en servidores locales:
 Modo Online
 Compite en el servidor oficial Pokémon Showdown:
 
-      python main.py --modo online --tipo_online ladder --batallas 5 --bot1 defiende
+      python main.py --modo online --tipo_online ladder --batallas 1 --bot1 defiende
 
 Nota: Para el modo online es posible configurar las credenciales de usuario en config.py.
 
