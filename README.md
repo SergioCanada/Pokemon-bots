@@ -19,7 +19,8 @@ Este proyecto permite simular batallas de Pokémon usando bots programados, tant
 2. Entorno virtual (opcional)
    ```bash
    python -m venv venv
-
+   venv\Scripts\activate
+   
 3. Dependencias
    ```bash
    pip install -r requirements.txt
