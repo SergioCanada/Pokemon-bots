@@ -31,7 +31,7 @@ Este proyecto permite simular batallas de Pokémon usando bots programados, tant
 Modo Local
 Ejecuta batallas entre bots en servidores locales:
 
-      python main.py --modo local --batallas 10 --bot1 ataca --bot2 defiende
+      python main.py --modo local --batallas 2 --bot1 ataca --bot2 maxdmg
 
 Modo Online
 Compite en el servidor oficial Pokémon Showdown:
