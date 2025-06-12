@@ -15,6 +15,7 @@ Este proyecto permite simular batallas de Pokémon usando bots programados, tant
    ```bash
    git clone https://github.com/SergioCanada/Pokemon-bots.git
    cd pokemon-bots
+   git clone https://github.com/smogon/pokemon-showdown.git
 
 2. Entorno virtual (opcional)
    ```bash
