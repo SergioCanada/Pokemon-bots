@@ -1,6 +1,6 @@
-Manual de Usuario
+# Pokémon Bots - Simulador de batallas con bots básicos
 
-Este proyecto permite simular batallas de Pokémon usando bots, tanto en modo local como en línea contra el servidor oficial Pokémon Showdown.
+Este proyecto permite simular batallas de Pokémon usando bots programados, tanto en modo local como en línea contra el servidor oficial Pokémon Showdown. Ideal para experimentos, entrenamientos y torneos automáticos.
 
 ## Requisitos previos
 
