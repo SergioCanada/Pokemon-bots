@@ -38,7 +38,7 @@ Compite en el servidor oficial Pokémon Showdown:
 
 Nota: Para el modo online es posible configurar las credenciales de usuario en config.py.
 
-Los bots disponibles son: random, maxdmg, ataca y defiende
+Los bots disponibles son: random, maxdmg, ataca y defiende.
 En online, el tipo puede ser ladder (bot vs alguien jugando competitivo) o desafio (puedes desafiarlo tù)
 
 
