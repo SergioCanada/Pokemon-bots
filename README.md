@@ -29,14 +29,14 @@ Este proyecto permite simular batallas de Pokémon usando bots, tanto en modo lo
 Modo Local
 Ejecuta batallas entre bots en servidores locales:
 
-  ```bash
-  python main.py --modo local --batallas 10 --bot1 ataca --bot2 defiende
+      ```bash
+      python main.py --modo local --batallas 10 --bot1 ataca --bot2 defiende
 
 Modo Online
 Compite en el servidor oficial Pokémon Showdown:
 
-   ```bash
-    python main.py --modo online --tipo_online ladder --batallas 5 --bot1 random
+      ```bash
+      python main.py --modo online --tipo_online ladder --batallas 5 --bot1 random
 
 Nota: Para el modo online es posible configurar las credenciales de usuario en config.py.
 
